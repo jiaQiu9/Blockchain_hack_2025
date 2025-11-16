@@ -17,6 +17,7 @@ Each food batch is assigned a unique Batch ID, and all key supply-chain events (
 
 ├── README.md
 
+
 ├── contracts # smart contract
 
 └── FrontEnd #html files
@@ -26,6 +27,12 @@ Each food batch is assigned a unique Batch ID, and all key supply-chain events (
     ── abi.js
     ── app.js
 └── solidity
+
+Command Guideline
+run python3
+-m http.server 8000 within the directory where app.html is placed,
+
+Then open the URL http://localhost:8000/app.html in your browser.
 
     ── contract.sol
 
