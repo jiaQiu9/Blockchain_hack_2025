@@ -8,12 +8,17 @@ This project proposes a blockchain-based logistics management system that levera
 ## Solution
 Each food batch is assigned a unique Batch ID, and all key supply-chain events (origin, storage, transportation, inspection, sale) are recorded as digitally signed blockchain transactions. Event details and digital signatures are hashed and stored on-chain, ensuring verifiability without revealing sensitive business information.
 
+## Desgin Document
+
+
 # File Structure 
 
-
 ├── README.md
+
 ├── contracts # smart contract
+
 └── FrontEnd #html files
+
 └── js folder
     └── abi.js
     └── app.js
