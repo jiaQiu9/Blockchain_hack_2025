@@ -1,0 +1,10 @@
+Batch001
+0x603d8cdf2d8652dac0e76ca50ebc5319d3f50b9a
+testCID
+3kgApple
+
+Batch001
+0xca0106852bca912098d367a618c635abcb256618
+movetoRetailer
+
+Batch001

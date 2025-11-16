@@ -1,41 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Food_Supply_Chain_DApp</title>
-    <link rel="stylesheet" type="text/css" href="styles/app.css">
+    <meta charset="utf-8">
+    <title>Traceability DApp</title>
+
     <script src="https://unpkg.com/@metamask/detect-provider/dist/detect-provider.min.js"></script>
     <!-- <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="application/javascript"></script>
-    <script src="js/abi.js"></script>
+    <script src="js/ABI.js"></script>
     <script src="js/app.js"></script>
+
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: auto; background:#fafafa; }
+        h2 { text-align:center; margin-top:20px; }
+        .card { background:#fff; padding:15px; margin:15px 0; border-radius:10px;
+                box-shadow:0 1px 4px rgba(0,0,0,.1); }
+        input, button { padding:8px; margin-top:5px; width:100%; }
+        button { background:#3A6BFF; border:none; color:white; border-radius:6px; cursor:pointer; }
+        button:hover { background:#2e55cc; }
+        #status { margin:10px 0; color:green; font-weight:bold; }
+    </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="contract-info">
-            <h2>Contract Location</h2>
-	    <p>This DApp is connected to a smart contract on the Ethereum testnet: <a href="https://sepolia.etherscan.io/address/0x1e33DaE11dcd6197259673C286C1F56e75A46A18"> 0x1e33DaE11dcd6197259673C286C1F56e75A46A18 </a> </p>
-            <h3>Contract Description</h3>
-            <p>This page is for SupplyChainManagement. Users can submit a event to the contract, which is then stored on the blockchain. Write can write the string. Read can read the latest string submitted.</p>
-        </div>
- 
-        <input type="text" id="inputString" placeholder="Enter a string...">
-	<div id="loadingIndicator" style="display: none;">
-  	    <img src="styles/loading.gif" alt="Loading..." width="64" height="64" > 
-	</div>
-        <button id="submitStringButton">Submit Events (For Writer)</button>
-        <div id="txHashDisplay"></div>
-	<p> Below is a live feed. Whenver anyone submits a new string it will show up here. We use events to acheive this! </p> 
-	<div id="liveStringDisplay" class="live-update"></div>
-        <button id="fetchLatestStringButton">Fetch Latest Events</button>
-        <div id="latestStringDisplay"></div>
+    <h2>Food Traceability DApp</h2>
+    <div id="status">Connecting...</div>
+    <button onclick="testConnection()">Test Contract</button>
+    <div id="testResult"></div>
 
-    <p> Below is the retrieval function for the reader. </p> 
 
-        <button id="fetchAllStringsButton"> Fetch information about the food product </button>
-        <div id="allStringsDisplay"></div>
+    <div class="card">
+        <h3>Set Role</h3>
+        <input id="roleAccount" placeholder="Account Address">
+        <select id="roleSelect">
+            <option value="0">Producer</option>
+            <option value="1">Transporter</option>
+            <option value="2">Retailer</option>
+            <option value="3">Regulator</option>
+        </select>
+        <button onclick="setRole()">Set Role</button>
+    </div>
+    <div class="card">
+        <h3>Create Batch</h3>
+        <input id="batchId" placeholder="Batch ID">
+        <input id="custodian" placeholder="First custodian">
+        <input id="hash" placeholder="Data hash">
+        <button onclick="createBatch()">Create</button>
+    </div>
 
-   </div>
+    <div class="card">
+        <h3>Transfer Custody</h3>
+        <input id="tBatch" placeholder="Batch ID">
+        <input id="tCustodian" placeholder="New custodian">
+        <input id="tHash" placeholder="Record hash">
+        <button onclick="transferCustody()">Transfer</button>
+    </div>
+
+    <div class="card">
+        <h3>Get Summary</h3>
+        <input id="sBatch" placeholder="Batch ID">
+        <button onclick="getSummary()">Fetch</button>
+        <div id="output" style="margin-top:10px;"></div>
+    </div>
 </body>
 </html>
-
