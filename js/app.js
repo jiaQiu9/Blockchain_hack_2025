@@ -55,11 +55,18 @@ async function setRole() {
 async function createBatch() {
     const id = v("batchId");
     const cust = v("custodian");
-    const hash = ethers.utils.formatBytes32String(v("hash")); // Convert to bytes32
+    const raw = v("hash");
 
-    if (!id || !cust || !hash) {
+    if (!id || !cust || !raw) {
         msg("All fields are required.");
         return;
+    }
+
+    let hash;
+    try {
+        hash = ethers.utils.formatBytes32String(raw); // safer for short strings like "3kgApple"
+    } catch (e) {
+        hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(raw));
     }
 
     try {
@@ -68,7 +75,8 @@ async function createBatch() {
         msg("Batch created: " + tx.hash);
     } catch (error) {
         console.error("Error creating batch:", error);
-        msg("Error creating batch: " + error.message);
+        const errMsg = error && error.error && error.error.message ? error.error.message : (error.message || String(error));
+        msg("Error creating batch: " + errMsg);
     }
 }
 

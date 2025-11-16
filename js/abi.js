@@ -14,7 +14,7 @@ const ABI = [
         "inputs": [
             { "internalType": "string", "name": "batchId", "type": "string" },
             { "internalType": "address", "name": "firstCustodian", "type": "address" },
-            { "internalType": "string", "name": "dataHash", "type": "string" }
+            { "internalType": "bytes32", "name": "dataHash", "type": "bytes32" }
         ],
         "name": "createBatch",
         "outputs": [],
