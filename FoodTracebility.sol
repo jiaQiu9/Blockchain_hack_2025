@@ -17,7 +17,7 @@ contract FoodTraceability is Ownable {
         address currentCustodian;
         bool exists;
         uint256 createdAt;
-        uint256 infohashRoot;
+        bytes32 infohashRoot;
     }
     
     struct EventRecord {
