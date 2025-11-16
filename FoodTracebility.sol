@@ -5,7 +5,6 @@ import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 contract FoodTraceability is Ownable {
     enum Role {
-        None,
         Producer,
         Transporter,
         Retailer,
@@ -17,20 +16,14 @@ contract FoodTraceability is Ownable {
         address creator;
         address currentCustodian;
         bool exists;
-        bool recalled;
-        string recallReason;
         uint256 createdAt;
-        uint256 photoroot; // the photo root hash.
+        uint256 infohashRoot;
     }
-
+    
     struct EventRecord {
-        //string eventType;
         address actor;
-        // string cid;
-        // bytes32 dataHash; // off chain record hash key
-        // uint256 photohash; // give back the photo hash of the current transfer
-        // uint256 timestamp;
-        uint256 recordHash; // store everything in hash, calculated off chain
+        bytes32 recordHash; // store everything in hash, calculated off chain
+        address newCust;
     }
 
     mapping(address => Role) public roles;
@@ -38,25 +31,26 @@ contract FoodTraceability is Ownable {
     mapping(bytes32 => EventRecord[]) private batchEvents; // change this to hash records.merkel root, updated each time
 
     event RoleUpdated(address indexed account, Role role);
+
     event BatchCreated(
         string batchId,
         address indexed creator,
-        address indexed custodian,
-        string cid,
-        bytes32 dataHash, 
-        uint256 photoroot //photo root 
+        address indexed custodian, // not
+        bytes32 datahash 
     );
+
     event EventAppended(
         string batchId,
         address indexed actor,
         string eventType,
         string cid,
-        bytes32 dataHash,
-        uint256 photoHash // need to review
+        bytes32 dataHash // change to uint256 from bytes32
+        
     );
+
     event CustodyTransferred(string batchId, address indexed from, address indexed to);
-    event RecallStatusChanged(string batchId, bool recalled, string reason);
-    event Eventtransmit(bytes32 key, string eventType, uint256 recordHash);
+   
+    event Eventtransmit(bytes32 key, string eventType, bytes32 recordHash); //n 
 
     constructor(address owner_) Ownable(owner_) {}
 
@@ -68,10 +62,8 @@ contract FoodTraceability is Ownable {
     function createBatch(
         string calldata batchId,
         address firstCustodian,
-        string calldata cid,
-        bytes32 dataHash,
-        uint256 initialphotoHash, // hash of the initial photo.
-        uint256 rootHash // merkle root hash
+        bytes32 dataHash // change to uint256 from bytes32
+       
     ) external onlyRole(Role.Producer) {
         require(bytes(batchId).length > 0, 'batchId required');
         require(firstCustodian != address(0), 'custodian required');
@@ -86,15 +78,14 @@ contract FoodTraceability is Ownable {
         batch.currentCustodian = firstCustodian;
         batch.exists = true;
         batch.createdAt = block.timestamp;
-        batch.photoroot= initialphotoHash; // need a merkle root function updater. 
-        _recordEvent(key, 'CREATE', rootHash);
+        
+        _recordEvent(key, 'CREATE', dataHash, msg.sender);
 
-        emit BatchCreated(batchId, msg.sender, firstCustodian, cid, dataHash, initialphotoHash);
+        emit BatchCreated(batchId, msg.sender, firstCustodian, dataHash);
     }
 
-    
 
-    function transferCustody(string calldata batchId, address newCustodian, uint256 photoHash, uint256 recordHash)
+    function transferCustody(string calldata batchId, address newCustodian, bytes32 recordHash)
         external
         onlyCustodian(batchId)
     {
@@ -104,23 +95,12 @@ contract FoodTraceability is Ownable {
         Batch storage batch = batches[key];
         address previous = batch.currentCustodian;
         batch.currentCustodian = newCustodian;
-        batch.photoroot=photoHash; // update the photo hash
-        //_recordEvent(key, 'TRANSFER', '', bytes32(0), photoHash); // need to change
-        _recordEvent(key, 'TRANSFER',recordHash);
+        batch.infohashRoot = recordHash;
+
+        _recordEvent(key, 'TRANSFER',recordHash, newCustodian);
         emit CustodyTransferred(batchId, previous, newCustodian);
     }
 
-    function setRecall(
-        string calldata batchId,
-        bool recalled,
-        string calldata reason
-    ) external onlyRole(Role.Regulator) {
-        bytes32 key = _requireBatch(batchId);
-        Batch storage batch = batches[key];
-        batch.recalled = recalled;
-        batch.recallReason = recalled ? reason : '';
-        emit RecallStatusChanged(batchId, recalled, reason);
-    }
 
     function getBatchSummary(string calldata batchId)
         external
@@ -146,21 +126,16 @@ contract FoodTraceability is Ownable {
     function _recordEvent(
         bytes32 key,
         string memory eventType,
-        // string memory cid,
-        // bytes32 dataHash,
-        // uint256 photoHashrecord,
-        uint256 newRecordHash
+        bytes32 newRecordHash,
+        address nAddress
     ) internal {
-        // change this to merkel root. stream to front+back
+        
         batchEvents[key].push(
             EventRecord({
-                // eventType: eventType,
                 actor: msg.sender,
-                // cid: cid,
-                // dataHash: dataHash,
-                // photohash: photoHashrecord,
-                // timestamp: block.timestamp,
-                recordHash: newRecordHash
+
+                recordHash: newRecordHash,
+                newCust: nAddress
             })
         );
         emit Eventtransmit(key, eventType, newRecordHash);
@@ -177,6 +152,7 @@ contract FoodTraceability is Ownable {
         return key;
     }
 
+    // merge 
     function _canWriteBatch(Batch storage batch, address actor) internal view returns (bool) {
         Role role = roles[actor];
         if (role == Role.Regulator) {
